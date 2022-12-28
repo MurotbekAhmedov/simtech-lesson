@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS cscart_departments (
+CREATE TABLE IF NOT EXISTS cscart_department (
     department_id INT(11) unsigned NOT NULL auto_increment,
     status varchar(1) NOT NULL default 'A',
     admin_id INT(11) unsigned NOT NULL default '0',
