@@ -493,6 +493,22 @@ if ($mode === 'manage') {
     Tygh::$app['view']->display('pickers/users/picker_contents.tpl');
     exit;
 
+}elseif ($mode == 'picker-s') {
+    $params = $_REQUEST;
+     $params['exclude_user_types'] = array ('C', 'P');
+    $params['skip_view'] = 'Y';
+
+    list($users, $search) = fn_get_users($params, $auth, Registry::get('settings.Appearance.admin_elements_per_page'));
+    Tygh::$app['view']->assign('users', $users);
+    Tygh::$app['view']->assign('search', $search);
+
+    Tygh::$app['view']->assign('countries', fn_get_simple_countries(true, CART_LANGUAGE));
+    Tygh::$app['view']->assign('states', fn_get_all_states());
+    Tygh::$app['view']->assign('usergroups', fn_get_usergroups(array('status' => array('A', 'H')), CART_LANGUAGE));
+
+    Tygh::$app['view']->display('pickers/users/picker_contents.tpl');
+    exit;
+
 } elseif ($mode == 'password_reminder') {
 
     $cron_password = Registry::get('settings.Security.cron_password');
@@ -841,12 +857,13 @@ elseif ($mode == 'add_department' || $mode == 'update_department'){
     // fn_print_die(end);
     $department_id = !empty($_REQUEST['department_id']) ? $_REQUEST['department_id'] : 0;
     $department_data = fn_get_department_data($department_id, DESCR_SL);
-
-//  fn_print_die($department_data);
+//   fn_print_die($department_data);
     if (empty($department_data) && $mode == 'update') {
         return [CONTROLLER_STATUS_NO_PAGE];
     }
-    Tygh::$app['view']->assign('department_data', $department_data);
+    Tygh::$app['view']->assign('department_data', $department_data,);
+    Tygh::$app['view']->assign('u_info', !empty($department_data['admin_id'])?fn_get_user_short_info($department_data['admin_id']):[],);
+    Tygh::$app['view']->assign('u_info_c', !empty($department_data['user_id'])?fn_get_user_short_info($department_data['user_id']):[],);
 }elseif ($mode == 'manage_department'){
 
     list($department, $search) = fn_get_department($_REQUEST, Registry::get('settings.Appearance.admin_elements_per_page'), DESCR_SL);
@@ -916,10 +933,10 @@ function fn_get_department($params = [], $items_per_page = 0, $lang_code = CART_
     // }
 
     $fields = array (
-        '?:department.department_id',
+        '?:department.*',
         // '?:department.type',
         // '?:department.target',
-        '?:department.status',
+        // '?:department.status',
         // '?:department.timestamp',
         '?:department_descriptions.department_name',
         '?:department_descriptions.description',

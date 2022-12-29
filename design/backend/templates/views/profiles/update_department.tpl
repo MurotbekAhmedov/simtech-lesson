@@ -50,14 +50,32 @@
 
 
     <div class="control-group">
+            <label class="control-label">{__("Leader")}</label>
+            <div class="controls">
+                {include file="views/profiles/picker-new.tpl"
+                 but_text=__("add_recipients_from_users")
+                  data_id="return_users" but_meta="btn"
+                  input_name="department_data[admin_id]"
+                   item_ids=$newsletter.users
+                   placement="right"
+                   display = "radio"
+                   view_mode="single_button"
+                   user_info=$u_info
+                   }
+                <p class="muted description">{__("tt_addons_newsletters_views_newsletters_update_users")}</p>
+            </div>
+        </div>
+         <div class="control-group">
             <label class="control-label">{__("users")}</label>
             <div class="controls">
                 {include file="pickers/users/picker.tpl"
                  but_text=__("add_recipients_from_users")
                   data_id="return_users" but_meta="btn"
-                  input_name="newsletter_data[users]"
+                  input_name="department_data[user_id]"
                    item_ids=$newsletter.users
-                   placement="right"}
+                   placement="right"
+                   user_info=$u_info_c
+                   }
                 <p class="muted description">{__("tt_addons_newsletters_views_newsletters_update_users")}</p>
             </div>
         </div>
