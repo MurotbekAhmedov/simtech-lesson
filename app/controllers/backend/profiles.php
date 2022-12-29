@@ -821,5 +821,103 @@ if ($mode === 'get_manager_list') {
 }elseif ($mode == 'add_department' || $mode == 'update_department'){
     // fn_print_die(end);
 }elseif ($mode == 'manage_department'){
-    // fn_print_die(end);
+
+    list($department, $search) = fn_get_department($_REQUEST, Registry::get('settings.Appearance.admin_elements_per_page'), DESCR_SL);
+    //   fn_print_die($department);
+    Tygh::$app['view']->assign('departments', $department);
+    Tygh::$app['view']->assign('search', $search);
+    // Tygh::$app['view']->assign('has_select_permission', $has_select_permission);
+}
+function fn_get_department($params = [], $items_per_page = 0, $lang_code = CART_LANGUAGE){
+     // Set default values to input params
+     $default_params = array(
+        'page' => 1,
+        'items_per_page' => $items_per_page
+    );
+
+    $params = array_merge($default_params, $params);
+
+    if (AREA == 'C') {
+        $params['status'] = 'A';
+    }
+
+    $sortings = array(
+        // 'timestamp' => '?:department.timestamp',
+        'name' => '?:department_descriptions.department_name',
+        // 'type' => '?:department.type',
+        'status' => '?:department.status',
+    );
+
+    $condition = $limit = $join = '';
+
+    if (!empty($params['limit'])) {
+        $limit = db_quote(' LIMIT 0, ?i', $params['limit']);
+    }
+
+    $sorting = db_sort($params, $sortings, 'name', 'asc');
+
+
+    if (!empty($params['item_ids'])) {
+        $condition .= db_quote(' AND ?:department.department_id IN (?n)', explode(',', $params['item_ids']));
+    }
+
+    // if (!empty($params['name'])) {
+    //     $condition .= db_quote(' AND ?:department_descriptions.banner LIKE ?l', '%' . trim($params['name']) . '%');
+    // }
+
+    if (!empty($params['status'])) {
+        $condition .= db_quote(' AND ?:department.status = ?s', $params['status']);
+    }
+
+    // if (!empty($params['period']) && $params['period'] != 'A') {
+    //     list($params['time_from'], $params['time_to']) = fn_create_periods($params);
+    //     $condition .= db_quote(' AND (?:department.timestamp >= ?i AND ?:department.timestamp <= ?i)', $params['time_from'], $params['time_to']);
+    // }
+
+    $fields = array (
+        '?:department.department_id',
+        // '?:department.type',
+        // '?:department.target',
+        '?:department.status',
+        // '?:department.timestamp',
+        '?:department_descriptions.department_name',
+        '?:department_descriptions.description',
+        // '?:department_descriptions.url',
+        // '?:banner_images.banner_image_id',
+    );
+
+    // if (fn_allowed_for('ULTIMATE')) {
+    //     $fields[] = '?:department.company_id';
+    // }
+
+
+    $join .= db_quote(' LEFT JOIN ?:department_descriptions ON ?:department_descriptions.department_id = ?:department.department_id AND ?:department_descriptions.lang_code = ?s', $lang_code);
+    // $join .= db_quote(' LEFT JOIN ?:banner_images ON ?:banner_images.department_id = ?:department.department_id AND ?:banner_images.lang_code = ?s', $lang_code);
+
+    if (!empty($params['items_per_page'])) {
+        $params['total_items'] = db_get_field("SELECT COUNT(*) FROM ?:department $join WHERE 1 $condition");
+        $limit = db_paginate($params['page'], $params['items_per_page'], $params['total_items']);
+    }
+
+    $department = db_get_hash_array(
+        "SELECT ?p FROM ?:department " .
+        $join .
+        "WHERE 1 ?p ?p ?p",
+        'department_id', implode(', ', $fields), $condition, $sorting, $limit
+    );
+
+    // if (!empty($params['item_ids'])) {
+    //     $banners = fn_sort_by_ids($banners, explode(',', $params['item_ids']), 'department_id');
+    // }
+
+    // $banner_image_ids = array_column($banners, 'banner_image_id');
+    // $images = fn_get_image_pairs($banner_image_ids, 'promo', 'M', true, false, $lang_code);
+
+    // foreach ($department as $department_id => $item) {
+    //     $department[$department_id]['main_pair'] = !empty($images[$item['banner_image_id']]) ? reset($images[$item['banner_image_id']]) : array();
+    // }
+
+
+
+    return array($department, $params);
 }
