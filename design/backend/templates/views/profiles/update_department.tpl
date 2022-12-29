@@ -1,14 +1,15 @@
 {if $department_data}
-    {assign var="id" value=$department_data.$department_id}
+    {assign var="id" value=$department_data.department_id}
 {else}
     {assign var="id" value=0}
 {/if}
+
 
 {capture name="mainbox"}
 
 <form action="{""|fn_url}" method="post" class="form-horizontal form-edit" name="banners_form" enctype="multipart/form-data">
 <input type="hidden" class="cm-no-hide-input" name="fake" value="1" />
-<input type="hidden" class="cm-no-hide-input" name="banner_id" value="{$id}" />
+<input type="hidden" class="cm-no-hide-input" name="department_id" value="{$id}" />
 
 
     <div id="content_general">
@@ -36,33 +37,48 @@
             </div>
         </div>
 
-        <div class="control-group {if $b_type == "G"}hidden{/if}" id="banner_text">
+        <div class="control-group" id="banner_text">
             <label class="control-label" for="elm_banner_description">{__("description")}:</label>
             <div class="controls">
-                <textarea id="elm_banner_description" name="department_data[description]" cols="35" rows="8" class="cm-wysiwyg input-large">{$banner.description}</textarea>
+                <textarea id="elm_banner_description" name="department_data[description]" cols="35" rows="8" class="cm-wysiwyg input-large">{$department_data.description}</textarea>
             </div>
         </div>
 
 
         {include file="common/select_status.tpl" input_name="department_data[status]" id="elm_banner_status" obj_id=$id obj=$banner hidden=false}
 
+
+
+    <div class="control-group">
+            <label class="control-label">{__("users")}</label>
+            <div class="controls">
+                {include file="pickers/users/picker.tpl"
+                 but_text=__("add_recipients_from_users")
+                  data_id="return_users" but_meta="btn"
+                  input_name="newsletter_data[users]"
+                   item_ids=$newsletter.users
+                   placement="right"}
+                <p class="muted description">{__("tt_addons_newsletters_views_newsletters_update_users")}</p>
+            </div>
+        </div>
     <!--content_general--></div>
+     {if $id}
 
-    <div id="content_addons" class="hidden clearfix">
-        {hook name="banners:detailed_content"}
-        {/hook}
-    <!--content_addons--></div>
+        {/if}
 
+    {capture name="buttons"}
+        {if !$id}
 
+            {include file="buttons/save_cancel.tpl" but_role="submit-link" but_target_form="banners_form" but_name="dispatch[profiles.update_department]"}
+        {else}
 
-{capture name="buttons"}
-    {if !$id}
-        {include file="buttons/save_cancel.tpl" but_role="submit-link" but_target_form="banners_form" but_name="dispatch[banners.update]"}
-    {else}
-
-        {include file="buttons/save_cancel.tpl" but_name="dispatch[banners.update]" but_role="submit-link" but_target_form="banners_form" hide_first_button=$hide_first_button hide_second_button=$hide_second_button save=$id}
-    {/if}
-{/capture}
+            {include file="buttons/save_cancel.tpl" but_name="dispatch[profiles.update_department]" but_role="submit-link" but_target_form="banners_form" hide_first_button=$hide_first_button hide_second_button=$hide_second_button save=$id}
+            {capture name="tools_list"}
+            <li>{btn type="list" text=__("delete") class="cm-confirm" href="products.delete_department?department_id=`$id`" method="POST"}</li>
+            {/capture}
+            {dropdown content=$smarty.capture.tools_list}
+        {/if}
+    {/capture}
 
 </form>
 
@@ -72,7 +88,7 @@
     {$title = "Добавить новый отдел"}
 {else}
   {$title_start = "Изменить"}
-  {$title = "department_data.department_name"}
+  {$title = "{$department_data.department_name}"}
 {/if}
 
 {include file="common/mainbox.tpl"
