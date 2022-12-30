@@ -38,6 +38,7 @@
 
 
                 <th width="6%" class="mobile-hide">&nbsp;</th>
+                 <th width="6%" class="mobile-hide">Руководитель</th>
                 <th width="10%" class="right"><a class="cm-ajax" href="{"`$c_url`&sort_by=status&sort_order=`$search.sort_order_rev`"|fn_url}" data-ca-target-id={$rev}>{__("status")}{if $search.sort_by === "status"}{$c_icon nofilter}{/if}</a></th>
             </tr>
             </thead>
@@ -56,18 +57,29 @@
                 {else}
                     {$no_hide_input=""}
                 {/if}
+   <td width="6%" class="products-list__image">
+                        {include
+                                file="common/image.tpl"
+                                image=$department.main_pair.icon|default:$department.main_pair.detailed
+                                image_id=$department.main_pair.image_id
+                                image_width=50
+                                image_height=50
+                                href="update_department?department_id=`$department.department_id`"|fn_url
+                                image_css_class="products-list__image--img"
+                                link_css_class="products-list__image--link"
+                        }
+                    </td>
 
-                <td width="6%" class="left mobile-hide">
-                    <input type="checkbox" name="department_id[]" value="{$department.department_id}" class="cm-item {$no_hide_input} cm-item-status-{$department.status|lower}" /></td>
                 <td class="{$no_hide_input}" data-th="{__("name")}">
                     <a class="row-status" href="{"profiles.update_department?department_id=`$department.department_id`"|fn_url}">{$department.department_name}</a>
                     {include file="views/companies/components/company_name.tpl" object=$banner}
                 </td>
 
 
+
                 <td width="6%" class="mobile-hide">
                     {capture name="tools_list"}
-                        <li>{btn type="list" text=__("edit") href="update_department?department_id=`$department.department_id`"}</li>
+                        <li>{btn type="list" text=__("edit") href="profiles.update_department?department_id=`$department.department_id`"}</li>
                     {if $allow_save}
                         <li>{btn type="list" class="cm-confirm" text=__("delete") href="profiles.delete_department?department_id=`$department.department_id`" method="POST"}</li>
                     {/if}
@@ -75,6 +87,10 @@
                     <div class="hidden-tools">
                         {dropdown content=$smarty.capture.tools_list}
                     </div>
+                </td>
+                   <td class="{$no_hide_input}" data-th="Руководитель>
+                    <a class="row-status" href="{"profiles.update_department?department_id=`$department.department_id`"|fn_url}">{$admins[$department.admin_id].firstname } {$admins[$department.admin_id].lastname}</a>
+                    {include file="views/companies/components/company_name.tpl" object=$banner}
                 </td>
                 <td width="10%" class="right" data-th="{__("status")}">
                     {include file="common/select_popup.tpl" id=$department.department_id status=$department.status hidden=true object_id_name="department_id" table="departments" popup_additional_class="`$no_hide_input` dropleft"}

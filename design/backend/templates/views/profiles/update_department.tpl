@@ -23,19 +23,21 @@
 
 
 
-        <div class="control-group" id="banner_graphic">
-            <label class="control-label">{__("image")}</label>
-            <div class="controls">
-                {include file="common/attach_images.tpl"
-                    image_name="department_name"
-                    image_object_type="department_name"
-                    image_pair=$department_data.main_pair
-                    image_object_id=$id
-                    no_detailed=true
-                    hide_titles=true
-                }
-            </div>
-        </div>
+                            {component name="configurable_page.field" entity="products" tab="detailed" section="information" field="images"}
+                                <div class="control-group">
+                                    <label class="control-label">{__("images")}:</label>
+                                    <div class="controls">
+                                        {include
+                                            file="common/form_file_uploader.tpl"
+                                            existing_pairs=(($department_data.main_pair) ? [$department_data.main_pair] : []) + $department_data.image_pairs|default:[]
+                                            file_name="file"
+                                            image_pair_types=['N' => 'product_add_additional_image', 'M' => 'product_main_image', 'A' => 'product_additional_image']
+                                            allow_update_files=!$is_shared_product && $allow_update_files|default:true
+                                        }
+                                    </div>
+                                </div>
+                            {/component}
+
 
         <div class="control-group" id="banner_text">
             <label class="control-label" for="elm_banner_description">{__("description")}:</label>
@@ -50,13 +52,13 @@
 
 
     <div class="control-group">
-            <label class="control-label">{__("Leader")}</label>
+            <label class="control-label">Руководитель</label>
             <div class="controls">
                 {include file="views/profiles/picker-new.tpl"
                  but_text=__("add_recipients_from_users")
                   data_id="return_users" but_meta="btn"
                   input_name="department_data[admin_id]"
-                   item_ids=$newsletter.users
+                   item_ids=$department_data.admin_id
                    placement="right"
                    display = "radio"
                    view_mode="single_button"
@@ -72,7 +74,7 @@
                  but_text=__("add_recipients_from_users")
                   data_id="return_users" but_meta="btn"
                   input_name="department_data[user_id]"
-                   item_ids=$newsletter.users
+                   item_ids=$department_data.user_id
                    placement="right"
                    user_info=$u_info_c
                    }
@@ -92,7 +94,7 @@
 
             {include file="buttons/save_cancel.tpl" but_name="dispatch[profiles.update_department]" but_role="submit-link" but_target_form="banners_form" hide_first_button=$hide_first_button hide_second_button=$hide_second_button save=$id}
             {capture name="tools_list"}
-            <li>{btn type="list" text=__("delete") class="cm-confirm" href="products.delete_department?department_id=`$id`" method="POST"}</li>
+            <li>{btn type="list" text=__("delete") class="cm-confirm" href="profiles.delete_department?department_id=`$id`" method="POST"}</li>
             {/capture}
             {dropdown content=$smarty.capture.tools_list}
         {/if}
