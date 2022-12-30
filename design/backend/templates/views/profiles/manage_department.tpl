@@ -64,7 +64,7 @@
                                 image_id=$department.main_pair.image_id
                                 image_width=50
                                 image_height=50
-                                href="update_department?department_id=`$department.department_id`"|fn_url
+                                href="profiles.update_department?department_id=`$department.department_id`"|fn_url
                                 image_css_class="products-list__image--img"
                                 link_css_class="products-list__image--link"
                         }
@@ -88,8 +88,15 @@
                         {dropdown content=$smarty.capture.tools_list}
                     </div>
                 </td>
-                   <td class="{$no_hide_input}" data-th="Руководитель>
-                    <a class="row-status" href="{"profiles.update_department?department_id=`$department.department_id`"|fn_url}">{$admins[$department.admin_id].firstname } {$admins[$department.admin_id].lastname}</a>
+                   <td class="{$no_hide_input}" data-th="Руководитель">
+                    <a class="row-status" href="{"profiles.update_department?department_id=`$department.department_id`"|fn_url}">
+
+                    {foreach $admins as $key => $value}
+                    {if $value.user_id == $department.admin_id}
+                    {$value.firstname} {$value.lastname}
+                    {/if}
+                    {/foreach}
+                    </a>
                     {include file="views/companies/components/company_name.tpl" object=$banner}
                 </td>
                 <td width="10%" class="right" data-th="{__("status")}">

@@ -890,15 +890,12 @@ elseif ($mode == 'add_department' || $mode == 'update_department'){
     // Tygh::$app['view']->assign('admins', $users);
     list($users, $search) = fn_get_users($_REQUEST, $auth, Registry::get('settings.Appearance.admin_elements_per_page'));
 
-     $user_ids = array_column($users, 'user_id');
-     $user_firstname = array_column($users, 'firstname');
-       $admins = $users;
-    // fn_print_die();
+      $user_ids = array_column($users, 'user_id');
+      $user_firstname = array_column($users, 'firstname');
+        $admins = $users;
+        // fn_print_die($user_ids = array_column($users, 'user_id'));
     Tygh::$app['view']->assign('departments', $department);
     Tygh::$app['view']->assign('search', $search);
-    //  $user_info = fn_get_user_info($users, true);
-    //  $admins = fn_get_user_short_info($admins.firstname);
-    //  fn_print_die( $admins);
     Tygh::$app['view']->assign('admins', $admins);
 
     // fn_print_die();
