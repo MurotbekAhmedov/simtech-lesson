@@ -1,6 +1,9 @@
 
 <div class="ty-feature">
+<div class="ty-feature__name ty-wysiwyg-content">
 
+       {__("Department")}: {$department_data.department_name nofilter}
+    </div>
     <div class="ty-feature__image">
        {include
                                             file="common/image.tpl"
@@ -11,10 +14,7 @@
                                              image_height=$settings.Thumbnails.product_lists_thumbnail_height
                                             }
     </div>
-<div class="ty-feature__description ty-wysiwyg-content">
 
-       {__("Department")}: {$department_data.department_name nofilter}
-    </div>
     <br>
     <div class="ty-feature__description ty-wysiwyg-content">
 
