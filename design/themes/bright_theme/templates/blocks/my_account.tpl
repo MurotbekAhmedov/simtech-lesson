@@ -42,6 +42,7 @@
                 <li class="ty-account-info__item ty-dropdown-box__item"><a class="ty-account-info__a underlined" href="{"product_features.compare"|fn_url}" rel="nofollow">{__("view_comparison_list")}{if $compared_products_ids} ({$compared_products_ids|count}){/if}</a></li>
             {/if}
         {/hook}
+        <li class="ty-account-info__item ty-dropdown-box__item"><a class="ty-account-info__a underlined" href="{"profiles.department&items_per_page=3"|fn_url}" rel="nofollow">{__("Departments")}</a></li>
     </ul>
 
     {if $settings.Appearance.display_track_orders == 'Y'}
