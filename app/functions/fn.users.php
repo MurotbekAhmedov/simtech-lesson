@@ -5360,3 +5360,146 @@ function fn_copy_shipping_fields_in_billing(array $user_data)
 
     return $user_data;
 }
+function fn_get_department_data($department_id = 0, $lang_code = CART_LANGUAGE){
+
+    $departmen = [];
+    if(!empty($department_id)){
+        list($department) = fn_get_department(['department_id' => $department_id],1,$lang_code);
+        $departmen = !empty($department) ? reset($department) : [];
+    }
+    return $departmen;
+
+}
+function fn_get_department($params = [], $items_per_page = 0, $lang_code = CART_LANGUAGE){
+     // Set default values to input params
+     $default_params = array(
+        'page' => 1,
+        'items_per_page' => $items_per_page
+    );
+
+    $params = array_merge($default_params, $params);
+
+    if (AREA == 'C') {
+        $params['status'] = 'A';
+    }
+
+    $sortings = array(
+        // 'timestamp' => '?:department.timestamp',
+        'name' => '?:department_descriptions.department_name',
+        // 'type' => '?:department.type',
+        'status' => '?:department.status',
+    );
+
+    $condition = $limit = $join = '';
+
+    if (!empty($params['limit'])) {
+        $limit = db_quote(' LIMIT 0, ?i', $params['limit']);
+    }
+
+    $sorting = db_sort($params, $sortings, 'name', 'asc');
+
+
+    if (!empty($params['item_ids'])) {
+        $condition .= db_quote(' AND ?:department.department_id IN (?n)', explode(',', $params['item_ids']));
+    }
+    if (!empty($params['department_id'])) {
+        $condition .= db_quote(' AND ?:department.department_id = ?i ', $params['department_id'] );
+    }
+    if (!empty($params['admin_id'])) {
+        $condition .= db_quote(' AND ?:department.admin_id = ?i ', $params['admin_id'] );
+    }
+
+    // if (!empty($params['name'])) {
+    //     $condition .= db_quote(' AND ?:department_descriptions.banner LIKE ?l', '%' . trim($params['name']) . '%');
+    // }
+
+    if (!empty($params['status'])) {
+        $condition .= db_quote(' AND ?:department.status = ?s', $params['status']);
+    }
+
+    // if (!empty($params['period']) && $params['period'] != 'A') {
+    //     list($params['time_from'], $params['time_to']) = fn_create_periods($params);
+    //     $condition .= db_quote(' AND (?:department.timestamp >= ?i AND ?:department.timestamp <= ?i)', $params['time_from'], $params['time_to']);
+    // }
+
+    $fields = array (
+        '?:department.*',
+        // '?:department.type',
+        // '?:department.target',
+        // '?:department.status',
+        // '?:department.timestamp',
+        '?:department_descriptions.department_name',
+        '?:department_descriptions.description',
+        // '?:department_descriptions.url',
+        // '?:banner_images.banner_image_id',
+    );
+
+    // if (fn_allowed_for('ULTIMATE')) {
+    //     $fields[] = '?:department.company_id';
+    // }
+
+
+    $join .= db_quote(' LEFT JOIN ?:department_descriptions ON ?:department_descriptions.department_id = ?:department.department_id AND ?:department_descriptions.lang_code = ?s', $lang_code);
+    // $join .= db_quote(' LEFT JOIN ?:banner_images ON ?:banner_images.department_id = ?:department.department_id AND ?:banner_images.lang_code = ?s', $lang_code);
+
+    if (!empty($params['items_per_page'])) {
+        $params['total_items'] = db_get_field("SELECT COUNT(*) FROM ?:department $join WHERE 1 $condition");
+        $limit = db_paginate($params['page'], $params['items_per_page'], $params['total_items']);
+    }
+
+    $department = db_get_hash_array(
+        "SELECT ?p FROM ?:department " .
+        $join .
+        "WHERE 1 ?p ?p ?p",
+        'department_id', implode(', ', $fields), $condition, $sorting, $limit
+    );
+
+    // if (!empty($params['item_ids'])) {
+    //     $banners = fn_sort_by_ids($banners, explode(',', $params['item_ids']), 'department_id');
+    // }
+
+         $department_image_ids = array_keys($department);
+         $images = fn_get_image_pairs($department_image_ids, 'department_name', 'M', true, false, $lang_code);
+
+         foreach ($department as $department_id => $item) {
+             $department[$department_id]['main_pair'] = !empty($images[$department_id]) ? reset($images[$department_id]) : array();
+         }
+
+
+
+    return array($department, $params);
+}
+
+function fn_update_department($data, $department_id, $lang_code = DESCR_SL)
+{
+
+    if (!empty($department_id)) {
+        db_query("UPDATE ?:department SET ?u WHERE department_id = ?i", $data, $department_id);
+        db_query("UPDATE ?:department_descriptions SET ?u WHERE department_id = ?i AND lang_code = ?s", $data, $department_id, $lang_code);
+
+
+    } else {
+        $department_id = $data['department_id'] = db_replace_into('department', $data);
+
+        foreach (Languages::getAll() as $data['lang_code'] => $v) {
+            db_query("REPLACE INTO ?:department_descriptions ?e", $data);
+        }
+
+
+    }
+    if (!empty($department_id)) {
+        fn_attach_image_pairs('department_name','department_name',$department_id,$lang_code);
+    }
+
+    return $department_id;
+}
+function fn_delete_department($department_id)
+{
+
+    if (!empty($department_id)) {
+        $res = db_query("DELETE FROM ?:department  WHERE department_id = ?i", $department_id);
+        db_query("DELETE FROM ?:department_descriptions WHERE department_id = ?i", $department_id);
+
+
+    }
+}

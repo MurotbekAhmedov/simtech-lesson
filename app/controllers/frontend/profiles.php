@@ -300,7 +300,116 @@ if ($mode == 'add') {
     }
 
     fn_add_breadcrumb(__('registration'));
+}elseif ($mode == 'department') {
+    $items_per_page = 3;
+    // Save current url to session for 'Continue shopping' button
+    Tygh::$app['session']['continue_url'] = "profiles.department&items_per_page = 3;";
+
+    $params = $_REQUEST;
+
+    // if ($items_per_page = fn_change_session_param(Tygh::$app['session'], $_REQUEST, 'items_per_page')) {
+    //     $params['items_per_page'] = $items_per_page;
+    // }
+    // if ($sort_by = fn_change_session_param(Tygh::$app['session'], $_REQUEST, 'sort_by')) {
+    //     $params['sort_by'] = $sort_by;
+    // }
+    // if ($sort_order = fn_change_session_param(Tygh::$app['session'], $_REQUEST, 'sort_order')) {
+    //     $params['sort_order'] = $sort_order;
+    // }
+
+    if (isset($params['order_ids'])) {
+        $order_ids = is_array($params['order_ids']) ? $params['order_ids'] : explode(',', $params['order_ids']);
+        foreach ($order_ids as $order_id) {
+            if (!fn_is_order_allowed($order_id, $auth)) {
+                return [CONTROLLER_STATUS_NO_PAGE];
+            }
+        }
+    }
+
+    $params['admin_id'] = $_REQUEST['session']['auth']['user_id'];
+
+
+    list($department, $search) = fn_get_department($params, Registry::get('settings.Appearance.products_per_page'), CART_LANGUAGE);
+    // fn_print_die($department);
+    // if (isset($search['page']) && ($search['page'] > 1) && empty($products)) {
+    //     return array(CONTROLLER_STATUS_NO_PAGE);
+    // }
+
+
+    // Tygh::$app['view']->assign('show_no_products_block', $show_no_products_block);
+    // Tygh::$app['view']->assign('is_selected_filters', !empty($params['features_hash']));
+
+
+    // Tygh::$app['view']->assign('show_qty', true);
+    Tygh::$app['view']->assign('department', $department);
+    Tygh::$app['view']->assign('search', $search);
+    Tygh::$app['view']->assign('columns', 3);
+    // If page title for this category is exist than assign it to template
+    // fn_print_die($department);
+    // list($users, $search) = fn_get_users($_REQUEST, $auth, Registry::get('settings.Appearance.admin_elements_pall_page'));
+    // $user_ids = array_column($users, 'user_id');
+    // $user_firstname = array_column($users, 'firstname');
+    $admins = db_get_array("SELECT user_id, firstname, lastname FROM ?:users ");
+    Tygh::$app['view']->assign('admins', $admins);
+
+    fn_add_breadcrumb("Отделы");
+    // [/Breadcrumbs]
+}elseif ($mode === 'department_view') {
+
+    $department_data = [];
+    $department_id = !empty($_REQUEST['department_id']) ? $_REQUEST['department_id'] : 0;
+    $department_data = fn_get_department_data($department_id, CART_LANGUAGE);
+        if (empty($department_data)) {
+            return [CONTROLLER_STATUS_NO_PAGE];
+        }
+
+
+    Tygh::$app['view']->assign('department_data', $department_data);
+
+    fn_add_breadcrumb("Отдел",[$department_data['department']]);
+
+
+
+    // $params = $_REQUEST;
+    // $params['extend'] = ['description'];
+
+    // if ($items_per_page = fn_change_session_param(Tygh::$app['session']['search_params'], $_REQUEST, 'items_per_page')) {
+    //     $params['items_per_page'] = $items_per_page;
+    // }
+    // if ($sort_by = fn_change_session_param(Tygh::$app['session']['search_params'], $_REQUEST, 'sort_by')) {
+    //     $params['sort_by'] = $sort_by;
+    // }
+    // if ($sort_order = fn_change_session_param(Tygh::$app['session']['search_params'], $_REQUEST, 'sort_order')) {
+    //     $params['sort_order'] = $sort_order;
+    // }
+
+    // if (isset($params['order_ids'])) {
+    //     $order_ids = is_array($params['order_ids']) ? $params['order_ids'] : explode(',', $params['order_ids']);
+    //     foreach ($order_ids as $order_id) {
+    //         /** @psalm-suppress UndefinedGlobalVariable */
+    //         if (!fn_is_order_allowed($order_id, $auth)) {
+    //             return [CONTROLLER_STATUS_NO_PAGE];
+    //         }
+    //     }
+    // }
+
+    $admins = db_get_array("SELECT user_id, firstname, lastname FROM ?:users ");
+
+    list($users, $search) = fn_get_users($_REQUEST, $auth, Registry::get('settings.Appearance.admin_elements_per_page'));
+    $pizza = $department_data['user_id'];
+    $pieces = explode(",", $pizza);
+    Tygh::$app['view']->assign('admins', $admins);
+    Tygh::$app['view']->assign('pieces', $pieces);
+    // foreach ($admins as $key => $value) {
+    //     fn_print_die($value);
+    // }
+        //    fn_print_die($department_data);
+    // $user_ids = array_column($users, 'user_id');
+    // $user_firstname = array_column($users, 'firstname');
+    //   $admins = $users;
+    //   fn_print_die($users);
 }
+
 
 /**
  * Requests usergroup for customer
